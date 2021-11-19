@@ -3204,6 +3204,13 @@ enum GCDAsyncSocketConfig
 #pragma mark Disconnecting
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+static void killFd(int fd)
+{
+    int dummyFD = open("/dev/null", O_RDWR, 0666);
+    dup2(dummyFD, fd);
+    close(dummyFD);
+}
+
 - (void)closeWithError:(NSError *)error
 {
 	LogTrace();
@@ -3301,6 +3308,7 @@ enum GCDAsyncSocketConfig
 			LogVerbose(@"dispatch_source_cancel(accept4Source)");
 			dispatch_source_cancel(accept4Source);
 			
+            killFd(socket4FD);
 			// We never suspend accept4Source
 			
 			accept4Source = NULL;
@@ -3311,6 +3319,7 @@ enum GCDAsyncSocketConfig
 			LogVerbose(@"dispatch_source_cancel(accept6Source)");
 			dispatch_source_cancel(accept6Source);
 			
+            killFd(socket6FD);
 			// We never suspend accept6Source
 			
 			accept6Source = NULL;
